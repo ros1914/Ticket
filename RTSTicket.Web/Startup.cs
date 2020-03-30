@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -18,6 +19,8 @@ using RTSTicket.Data;
 using RTSTicket.Service;
 using RTSTicket.Service.Implementation;
 using RTSTicket.Web.Data;
+using RTSTicket.Web.Filters;
+using RTSTicket.Web.Middleware;
 using RTSTicket.Web.Models;
 using RTSTicket.Web.Services;
 
@@ -61,16 +64,15 @@ namespace RTSTicket.Web
 					.AddCookie();
 			
 
-			services.AddTransient<IAcountServices, AcountService>();
-			services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-
-			services.AddSingleton<IEmailSender, SendGridEmailSender>();
-			services.Configure<SendGridOptions>(this.Configuration.GetSection("EmailSettings"));
-			services.Configure<StripeSettings>(this.Configuration.GetSection("Stripe"));
+			
 
 			services.AddMvc().SetCompatibilityVersion(Microsoft.AspNetCore.Mvc.CompatibilityVersion.Version_3_0);
 			services.AddMvc(options => options.EnableEndpointRouting = false);
 
+			services.AddAuthorization(options=>
+			{
+				//options.AddPolicy("Administrator", policy => policy.AddRequirements(new AddHedarAuthorizationFilter()));
+			});
 			//Provide a secret key to Encrypt and Decrypt the Token
 			var SecretKey = Encoding.ASCII.GetBytes
 				 ("YourKey-2374-OFFKDI940NG7:56753253-tyuw-5769-0921-kfirox29zoxv");
@@ -102,6 +104,14 @@ namespace RTSTicket.Web
 					ClockSkew = TimeSpan.Zero
 				};
 			});
+
+			services.AddScoped<IAcountServices, AcountService>();
+			services.AddScoped<IAdminService, AdminService>();
+			services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+			services.AddTransient<MyAuthorizationFilter>();
+			services.AddSingleton<IEmailSender, SendGridEmailSender>();
+			services.Configure<SendGridOptions>(this.Configuration.GetSection("EmailSettings"));
+			services.Configure<StripeSettings>(this.Configuration.GetSection("Stripe"));
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -132,6 +142,7 @@ namespace RTSTicket.Web
 				}
 				await next();
 			});
+			app.SeedDataBase();
 			app.UseAuthorization();
 			app.UseAuthentication();
 			app.UseMvc(routes =>

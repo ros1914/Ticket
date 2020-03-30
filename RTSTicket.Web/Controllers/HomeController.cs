@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using RTSTicket.Web.Models;
@@ -22,8 +23,8 @@ namespace RTSTicket.Web.Controllers
 		{
 			return View();
 		}
-		
 
+		//[Authorize(Policy = "Admin")]
 		public IActionResult Privacy()
 		{
 			return View();

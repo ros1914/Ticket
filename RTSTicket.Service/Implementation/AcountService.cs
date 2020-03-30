@@ -26,6 +26,8 @@
 			this.db = db;
 		}
 
+
+		
 		public async Task<string> ConfirmEmail(string email, string token)
 		{
 			var user = this.db.Users.Where(p => p.Email == email).FirstOrDefault();
@@ -39,22 +41,24 @@
 			return "user is null";
 		}
 
-		public async Task<User> FindByEmailAsync(string email)
+		public User FindByEmailAsync(string email)
 		{
-			var user = this.db.Users.Where(u => u.Email == email).FirstOrDefault();
-
+			var user = this.db.Users.Where(u=>u.Email==email).FirstOrDefault();
+					   			
 			if (user == null)
 			{
 				return null;
 			}
-
-			return user;
+			
+			 return  user;
 
 		}
 
 		public async Task<User> Login(LoginModel loginModel)
 		{
 			var userAcount = db.Users.Where(b => b.UserName.Equals(loginModel.UserName)).FirstOrDefault();
+
+			
 			if (userAcount != null)
 			{
 				if ( BCrypt.Net.BCrypt.Verify(loginModel.Password, userAcount.Password))
@@ -214,6 +218,22 @@
 			);
 			var token = new JwtSecurityTokenHandler().WriteToken(JWToken);
 			return token;
+		}
+
+		public async Task<bool> RegisterAdmin(User user)
+		{
+			
+			if (user == null)
+			{
+				return false;
+			}
+			var hshPassword = BCrypt.Net.BCrypt.HashPassword(user.Password);
+			user.Password = hshPassword;
+			user.ConfirmPassword = hshPassword;
+			user.SecurityStamp = SecurityStampTokenProvider();
+			this.db.Add(user);
+			await db.SaveChangesAsync();
+			return true;
 		}
 
 

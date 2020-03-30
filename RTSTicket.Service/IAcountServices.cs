@@ -12,7 +12,7 @@
 		string TokenProvider();
 
 		Task<string> ConfirmEmail(string email, string token);
-		Task<User> FindByEmailAsync(string email);
+		User FindByEmailAsync(string email);
 
 		string CreateRandomPassword();
 
@@ -20,5 +20,7 @@
 		Task<string> SaveRandomPassword(string newRandomPasword, string userEmail);
 		Task<string> SaveForgotPassword(ResetPasswordModel model);
 		string SecurityStampTokenProvider();
+
+		Task<bool> RegisterAdmin(User user);
 	}
 }

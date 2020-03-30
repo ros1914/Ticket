@@ -2,15 +2,17 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RTSTicket.Data;
 
 namespace RTSTicket.Data.Migrations
 {
     [DbContext(typeof(RTSTicketDbContext))]
-    partial class RTSTicketDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200325104951_AddRolesAndRelationShipBetwenUserAndRole")]
+    partial class AddRolesAndRelationShipBetwenUserAndRole
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -80,7 +82,7 @@ namespace RTSTicket.Data.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("UserRolses");
+                    b.ToTable("UserRolse");
                 });
 
             modelBuilder.Entity("RTSTicket.Data.Models.UserRolse", b =>

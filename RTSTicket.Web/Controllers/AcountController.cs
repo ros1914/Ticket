@@ -6,7 +6,8 @@
 	using RTSTicket.Data;
 	using RTSTicket.Service;
 	using RTSTicket.Service.Models.Acount;
-	using RTSTicket.Web.Models.ViewModels.Acount;
+    using RTSTicket.Web.Filters;
+    using RTSTicket.Web.Models.ViewModels.Acount;
 	using RTSTicket.Web.Services;
 	using System;
 	using System.ComponentModel.DataAnnotations;
@@ -29,7 +30,17 @@
 			this.emailSender = emailSender;
 		}
 
+
+		//[TypeFilter(typeof(MyAuthorizationFilter), Arguments = new[] { "Administrator"})]
+		[MyAuthorizationFilter]
+		public IActionResult Test()
+		{
+			return View();
+		}
+
+
 		[HttpGet]
+		//[Authorize(Policy ="Admin")]
 		public IActionResult Register()
 		{
 
@@ -124,6 +135,7 @@
 		}
 
 		[HttpGet]
+		//[Authorize(Policy ="Administrator")]
 		public IActionResult ForgotPassword()
 		{
 
@@ -140,7 +152,7 @@
 			}
 
 
-			var user = await this.acountServices.FindByEmailAsync(model.Email);
+			var user =  this.acountServices.FindByEmailAsync(model.Email);
 			if (user == null)
 			{
 

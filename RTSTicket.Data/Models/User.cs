@@ -37,6 +37,7 @@ namespace RTSTicket.Data.Models
 
 		public string SecurityStamp { get; set; }
 
-		
+		public IEnumerable<UserRolse> Rolses { get; set; } = new List<UserRolse>();
+
 	}
 }
