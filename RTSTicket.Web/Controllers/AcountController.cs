@@ -1,17 +1,19 @@
 ﻿namespace RTSTicket.Web.Controllers
 {
-	using Microsoft.AspNetCore.Authorization;
+	using Microsoft.AspNetCore.Authentication;
+	using Microsoft.AspNetCore.Authentication.Cookies;
 	using Microsoft.AspNetCore.Http;
 	using Microsoft.AspNetCore.Mvc;
 	using RTSTicket.Data;
 	using RTSTicket.Service;
 	using RTSTicket.Service.Models.Acount;
-    using RTSTicket.Web.Filters;
-    using RTSTicket.Web.Models.ViewModels.Acount;
+	using RTSTicket.Web.Filters;
+	using RTSTicket.Web.Models.ViewModels.Acount;
 	using RTSTicket.Web.Services;
 	using System;
-	using System.ComponentModel.DataAnnotations;
+	using System.Collections.Generic;
 	using System.Linq;
+	using System.Security.Claims;
 	using System.Text.Encodings.Web;
 	using System.Threading.Tasks;
 
@@ -31,16 +33,42 @@
 		}
 
 
-		//[TypeFilter(typeof(MyAuthorizationFilter), Arguments = new[] { "Administrator"})]
-		[MyAuthorizationFilter]
+		[MyAuthorizationFilter(Role = "Administrator")]
+		
 		public IActionResult Test()
 		{
+
 			return View();
 		}
 
+		private void ClimePrincipal()
+		{
+			var firstClime = new List<Claim>()
+			{
+			new Claim(ClaimTypes.Name, "Gustav"),
+			new Claim(ClaimTypes.Role,"Maistor")
+			};
+
+			var licenseClime = new List<Claim>()
+			{
+			new Claim(ClaimTypes.Name, "bash Maistor")
+			};
+
+			var resultIdentity = new ClaimsIdentity(firstClime, "Gustav");
+			var licensIdentity = new ClaimsIdentity(licenseClime, "Goverment");
+
+			var userPrincipal = new ClaimsPrincipal(new[] { resultIdentity, licensIdentity });
+
+			httpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, userPrincipal);
+		}
 
 		[HttpGet]
-		//[Authorize(Policy ="Admin")]
+		public IActionResult AccessDenied(string name)
+		{
+			return View(name);
+		}
+
+		[HttpGet]
 		public IActionResult Register()
 		{
 
@@ -48,7 +76,6 @@
 		}
 
 		[HttpPost]
-		//[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Register(RegisterBindingModel model)
 		{
 
@@ -95,10 +122,8 @@
 		}
 
 		[HttpPost]
-
-		[ValidateAntiForgeryToken]
 		[AutoValidateAntiforgeryToken]
-		public async Task<IActionResult> Login(LoginModel loginModel)
+		public IActionResult Login(LoginModel loginModel)
 		{
 
 			if (!ModelState.IsValid)
@@ -107,7 +132,8 @@
 			}
 
 
-			var acount = await acountServices.Login(loginModel);
+			var acount = acountServices.Login(loginModel);
+
 			if (acount == null)
 			{
 				this.ViewBag.Error = "Invalid user ";
@@ -115,9 +141,17 @@
 			}
 			else
 			{
+				var roleName = acountServices.GetAllRolesOnUser(acount.Id);
+				foreach (var item in roleName)
+				{
+					HttpContext.Session.SetString($"{item}", item);
+				}
+
 				var userToken = this.acountServices.TokenProvider();
 				httpContext.Session.SetString("JWToken", userToken);
 				HttpContext.Session.SetString("username", acount.UserName);
+
+				ClimePrincipal();
 
 				return RedirectToAction("Index", "Home");
 			}
@@ -129,13 +163,11 @@
 		{
 			HttpContext.Session.Remove("username");
 			HttpContext.Session.Remove("JWToken");
-
+			
 			return View();
-			//return RedirectToAction("Index", "Home");
 		}
 
 		[HttpGet]
-		//[Authorize(Policy ="Administrator")]
 		public IActionResult ForgotPassword()
 		{
 
@@ -152,7 +184,7 @@
 			}
 
 
-			var user =  this.acountServices.FindByEmailAsync(model.Email);
+			var user = this.acountServices.FindByEmailAsync(model.Email);
 			if (user == null)
 			{
 
@@ -241,6 +273,10 @@
 		public IActionResult ResetPasswortConfirmation()
 		{
 			return View();
+
 		}
+
+
+
 	}
 }

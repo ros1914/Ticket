@@ -54,7 +54,7 @@
 
 		}
 
-		public async Task<User> Login(LoginModel loginModel)
+		public User Login(LoginModel loginModel)
 		{
 			var userAcount = db.Users.Where(b => b.UserName.Equals(loginModel.UserName)).FirstOrDefault();
 
@@ -83,13 +83,16 @@
 				Email = model.Email,
 				Password = BCrypt.Net.BCrypt.HashPassword(model.Password),
 				ConfirmPassword = BCrypt.Net.BCrypt.HashPassword(model.Password),
-				SecurityStamp = securityStamp
-
+				SecurityStamp = securityStamp,
+				Rolses = new List<UserRolse>() { new UserRolse() { RoleId=2} }
+				
 			};
 			if (newUser == null)
 			{
 				return false;
 			}
+			
+			
 			this.db.Add(newUser);
 			await db.SaveChangesAsync();
 			return true;
@@ -234,6 +237,29 @@
 			this.db.Add(user);
 			await db.SaveChangesAsync();
 			return true;
+		}
+
+		public IEnumerable<string> GetAllRolesOnUser(long userId)
+		{
+			if (userId == 0|| userId<0)
+			{
+				return null;
+			}
+
+
+			var userRoles = this.db.UserRolses.Where(ur => ur.UserId == userId).Select(r => r.RoleId).ToList();
+			
+			List<string> nameRole = new List<string>();
+			foreach (var item in userRoles)
+			{
+				var name = this.db.Roles.Where(r => r.Id == item).Select(r => r.Name).FirstOrDefault();
+				nameRole.Add(name);
+			}
+			if (nameRole != null)
+			{
+				return nameRole;
+			}
+			return null;
 		}
 
 

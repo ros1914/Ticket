@@ -14,6 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using RTSTicket.Data;
 using RTSTicket.Service;
@@ -60,19 +61,14 @@ namespace RTSTicket.Web
 
 
 			services.AddControllersWithViews();
-			services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-					.AddCookie();
 			
 
-			
+			services.AddMvc(options => options.EnableEndpointRouting = false)
+				.SetCompatibilityVersion(Microsoft.AspNetCore.Mvc.CompatibilityVersion.Version_3_0);
 
-			services.AddMvc().SetCompatibilityVersion(Microsoft.AspNetCore.Mvc.CompatibilityVersion.Version_3_0);
-			services.AddMvc(options => options.EnableEndpointRouting = false);
 
-			services.AddAuthorization(options=>
-			{
-				//options.AddPolicy("Administrator", policy => policy.AddRequirements(new AddHedarAuthorizationFilter()));
-			});
+			services.AddAuthorization();
+
 			//Provide a secret key to Encrypt and Decrypt the Token
 			var SecretKey = Encoding.ASCII.GetBytes
 				 ("YourKey-2374-OFFKDI940NG7:56753253-tyuw-5769-0921-kfirox29zoxv");
@@ -89,26 +85,28 @@ namespace RTSTicket.Web
 				token.TokenValidationParameters = new TokenValidationParameters
 				{
 					ValidateIssuerSigningKey = true,
-			//Same Secret key will be used while creating the token
-			IssuerSigningKey = new SymmetricSecurityKey(SecretKey),
+					//Same Secret key will be used while creating the token
+					IssuerSigningKey = new SymmetricSecurityKey(SecretKey),
 					ValidateIssuer = true,
-			//Usually, this is your application base URL
-			ValidIssuer = "https://localhost:44340/",
+					//Usually, this is your application base URL
+					ValidIssuer = "https://localhost:44340/",
 					ValidateAudience = true,
-			//Here, we are creating and using JWT within the same application.
-			//In this case, base URL is fine.
-			//If the JWT is created using a web service, then this would be the consumer URL.
-			ValidAudience = "https://localhost:44340/",
+					//Here, we are creating and using JWT within the same application.
+					//In this case, base URL is fine.
+					//If the JWT is created using a web service, then this would be the consumer URL.
+					ValidAudience = "https://localhost:44340/",
 					RequireExpirationTime = true,
 					ValidateLifetime = true,
 					ClockSkew = TimeSpan.Zero
 				};
-			});
+			})
+			.AddCookie();
+
 
 			services.AddScoped<IAcountServices, AcountService>();
 			services.AddScoped<IAdminService, AdminService>();
+			services.AddScoped<MyAuthorizationFilter>();
 			services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-			services.AddTransient<MyAuthorizationFilter>();
 			services.AddSingleton<IEmailSender, SendGridEmailSender>();
 			services.Configure<SendGridOptions>(this.Configuration.GetSection("EmailSettings"));
 			services.Configure<StripeSettings>(this.Configuration.GetSection("Stripe"));

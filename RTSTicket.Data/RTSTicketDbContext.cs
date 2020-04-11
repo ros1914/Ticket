@@ -22,14 +22,14 @@ namespace RTSTicket.Data
 			modelBuilder.Entity<UserRolse>()
 				.HasKey(ur => new { ur.UserId, ur.RoleId });
 
-			modelBuilder.Entity<User>()
-			.HasMany(u => u.Rolses)
-			.WithOne(u => u.User)
+			modelBuilder.Entity<UserRolse>()
+			.HasOne(r=>r.User)
+			.WithMany(r=>r.Rolses)
 			.HasForeignKey(u => u.UserId);
 
-			modelBuilder.Entity<Role>()
-				.HasMany(r => r.Users)
-				.WithOne(r => r.Role)
+			modelBuilder.Entity<UserRolse>()
+				.HasOne(r=>r.Role)
+				.WithMany(r=>r.Users)
 				.HasForeignKey(r => r.RoleId);
 
 			base.OnModelCreating(modelBuilder);

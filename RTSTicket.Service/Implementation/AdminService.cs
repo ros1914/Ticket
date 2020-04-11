@@ -32,22 +32,23 @@ namespace RTSTicket.Service.Implementation
 			{
 				return false;
 			}
-
-			var isHaveRole = this.dbContext.UserRolses.Where(r=>r.UserId==users.Id).Select(r=>r.RoleId==roles.Id).FirstOrDefault();
-			if (!isHaveRole)
+			//var colectionRoles = new List<UserRolse>() { new UserRolse() { UserId = users.Id,RoleId = roles.Id} };
+			var useRoles = new UserRolse() { UserId = users.Id, RoleId = roles.Id  };
+			//if (colectionRoles !=null)
+			//{
+			//	users.Rolses = colectionRoles;
+			//	roles.Users = colectionRoles;
+			//	await dbContext.SaveChangesAsync();
+			//
+			//	return true;
+			//}
+			if (useRoles!=null)
 			{
-				var addRole = new UserRolse()
-				{
-					UserId = users.Id,
-					RoleId = roles.Id
-				};
-
-
-				await dbContext.AddAsync(addRole);
+				await dbContext.AddAsync(useRoles);
 				await dbContext.SaveChangesAsync();
-
 				return true;
 			}
+			
 			return false;
 		}
 
@@ -59,7 +60,8 @@ namespace RTSTicket.Service.Implementation
 			}
 			var result = new Role()
 			{
-				Name = roleName
+				Name = roleName,
+				Users = new List<UserRolse>()
 			};
 			if (result==null)
 			{

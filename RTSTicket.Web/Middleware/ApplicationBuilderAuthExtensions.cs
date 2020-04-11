@@ -41,13 +41,14 @@ namespace RTSTicket.Web.Middleware
 
 				if (user == null)
 				{
-					var users = new User ()
+					var users = new User()
 					{
 						UserName = "admin",
-						Email= "admin@example.com",
-						Password=DefaultAdminPassword,
+						Email = "admin@example.com",
+						Password = DefaultAdminPassword,
 						ConfirmPassword = DefaultAdminPassword,
-						ConfirmEmail=true
+						ConfirmEmail = true,
+						Rolses = new List<UserRolse>()
 					};
 
 					await acountService.RegisterAdmin(users);
